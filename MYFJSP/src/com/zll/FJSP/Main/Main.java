@@ -36,7 +36,7 @@ public class Main {
 
         for (int i = 0; i < times; i++) {
             for (int j = 0; j < 1; j++) {
-                Input input = new Input(new File("MYFJSP/input/" + "Mk101.txt"));// 输入算例
+                Input input = new Input(new File("MYFJSP/input/" + "Mk01.txt"));// 输入算例
                 Problem p = input.getProblemDesFromFile();
 
                 MyHybridAlgorithm GA = new MyHybridAlgorithm(p);

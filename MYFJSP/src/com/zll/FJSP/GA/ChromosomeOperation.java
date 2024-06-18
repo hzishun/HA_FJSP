@@ -103,13 +103,14 @@ public class ChromosomeOperation {
 
 
     public void Crossover(Chromosome c1, Chromosome c2) {
-        if (r.nextDouble() < 0.5) {
+//        if (r.nextDouble() < 0.5) {
             operSeqCrossoverPOX(c1.gene_OS, c2.gene_OS);
-        } else {
-            operSeqCrossoverJBX(c1.gene_OS, c2.gene_OS);
-        }
+//        } else {
+//            operSeqCrossoverJBX(c1.gene_OS, c2.gene_OS);
+//        }
 
-        machineSeqCrossover(c1.gene_MS, c2.gene_MS);
+//        machineSeqCrossover(c1.gene_MS, c2.gene_MS);
+        machineUniformCrossover(c1.gene_MS, c2.gene_MS);
     }
 
     public void operSeqCrossoverZLL(int o1[], int o2[]) {
@@ -316,17 +317,71 @@ public class ChromosomeOperation {
         }
     }
 
-    public void Mutation(Chromosome chromosome) {
-        double posibility = r.nextDouble();
-        if (posibility < 0.5) {
-            operSeqMutationSwap(chromosome.gene_OS);
-        } else {
-//            operSeqMutationNeighbor(chromosome.gene_OS);//这个变异方法需要三个以上的工件
+    public void machineUniformCrossover(int m1[], int m2[]) {//均匀交叉
+        int len = m1.length;
+
+        int[] p1 = new int[len];
+        int[] p2 = new int[len];
+        System.arraycopy(m1, 0, p1, 0, len);
+        System.arraycopy(m2, 0, p2, 0, len);
+
+        int[] base = new int[len];
+        for (int i = 0; i < len; i++) {
+            base[i] = r.nextInt(2);
         }
 
-        machineSeqMutation(chromosome.gene_MS);
+        for (int i = 0; i < len; i++) {
+            if (base[i] == 0) {
+                m1[i] = p2[i];
+                m2[i] = p1[i];
+            }
+        }
+    }
+    public void Mutation(Chromosome chromosome) {
+//        double posibility = r.nextDouble();
+//        if (posibility < 0.5) {
+//            operSeqMutationSwap(chromosome.gene_OS);
+//        } else {
+////            operSeqMutationNeighbor(chromosome.gene_OS);//这个变异方法需要三个以上的工件
+//        }
+        operationInsertionMutation(chromosome.gene_OS);
+        machineSingleMutation(chromosome.gene_MS);
     }
 
+    public void operationInsertionMutation(int[] os) {//插入变异
+        int len = os.length;
+
+        int posStart = r.nextInt(len);
+        int posInsert = r.nextInt(len);
+        
+        while(posStart == posInsert) {
+            posInsert = r.nextInt(len);
+        }
+
+        int temp = os[posStart];
+        if (posStart > posInsert) {
+            for (int i = posStart; i > posInsert; i--) {
+                os[i] = os[i - 1];
+            }
+        } else {
+            for (int i = posStart; i < posInsert; i++) {
+                os[i] = os[i + 1];
+            }
+        }
+        os[posInsert] = temp;
+    }
+    public void machineSingleMutation(int[] ms) {
+        int len = ms.length;
+
+        int pos = r.nextInt(len);
+        int position = ms[pos];
+        int machineCount = input.getMachineCountArr()[pos];
+        int mutation = r.nextInt(machineCount) + 1;
+        while(mutation == position) {
+            mutation = r.nextInt(machineCount) + 1;
+        }
+        ms[pos] = mutation;
+    }
     public void operSeqMutationSwap(int[] os) {
         int len = os.length;
         // 随机查找两点
