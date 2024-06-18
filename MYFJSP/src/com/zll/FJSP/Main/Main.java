@@ -35,8 +35,8 @@ public class Main {
         double[][][] resultGA = new double[times][instances.length][2];
 
         for (int i = 0; i < times; i++) {
-            for (int j = 0; j < instances.length; j++) {
-                Input input = new Input(new File("./input/" + instances[j]));// 输入算例
+            for (int j = 0; j < 1; j++) {
+                Input input = new Input(new File("MYFJSP/input/" + "Mk101.txt"));// 输入算例
                 Problem p = input.getProblemDesFromFile();
 
                 MyHybridAlgorithm GA = new MyHybridAlgorithm(p);

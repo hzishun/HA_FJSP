@@ -321,7 +321,7 @@ public class ChromosomeOperation {
         if (posibility < 0.5) {
             operSeqMutationSwap(chromosome.gene_OS);
         } else {
-            operSeqMutationNeighbor(chromosome.gene_OS);
+//            operSeqMutationNeighbor(chromosome.gene_OS);//这个变异方法需要三个以上的工件
         }
 
         machineSeqMutation(chromosome.gene_MS);
