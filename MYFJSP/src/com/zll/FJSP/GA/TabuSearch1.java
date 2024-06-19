@@ -84,13 +84,19 @@ public class TabuSearch1 {
 
 		for (int[] OS : OSs) {
 			Chromosome newChrom = new Chromosome(OS, chromosome.gene_MS.clone(), chromosome.r);
-			newChrom.fitness = 1.0 / c.evaluate(newChrom, input, operationMatrix);
+			int[] result = c.evaluate(newChrom, input, operationMatrix);
+			newChrom.fitness = 1.0 / result[1];
+			newChrom.makeSpan = result[0];
+//			newChrom.fitness = 1.0 / c.evaluate(newChrom, input, operationMatrix);
 			neighborhood.add(newChrom);
 		}
 
 		for (int[] MS : MSs) {
 			Chromosome newChrom = new Chromosome(chromosome.gene_OS.clone(), MS, chromosome.r);
-			newChrom.fitness = 1.0 / c.evaluate(newChrom, input, operationMatrix);
+			int[] result = c.evaluate(newChrom, input, operationMatrix);
+			newChrom.fitness = 1.0 / result[1];
+			newChrom.makeSpan = result[0];
+//			newChrom.fitness = 1.0 / c.evaluate(newChrom, input, operationMatrix);
 			neighborhood.add(newChrom);
 		}
 

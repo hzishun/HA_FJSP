@@ -35,7 +35,10 @@ public class test {
                 operationMatrix[i][j] = new Operation();
         }
         CaculateFitness c = new CaculateFitness();
-        cc.fitness = 1.0 / c.evaluate(cc, input, operationMatrix);
+        int[] result = c.evaluate(cc, input, operationMatrix);
+        cc.fitness = 1.0 / result[1];
+        cc.makeSpan = result[0];
+//        cc.fitness = 1.0 / c.evaluate(cc, input, operationMatrix);
         Solution sol = new Solution(operationMatrix, cc, input, 1.0 / cc.fitness);
         Chromosome pp = sol.toChromosome();
         Solution sol2 = new Solution(operationMatrix, pp, input, 1.0 / pp.fitness);

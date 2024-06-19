@@ -159,7 +159,9 @@ public class MyHybridAlgorithm {
                 os[j] = osList.get(j);
             }
             parents[i] = new Chromosome(os, ms, this.r);
-            parents[i].fitness = 1.0 / c.evaluate(parents[i], input, operationMatrix);
+            int[] result = c.evaluate(parents[i], input, operationMatrix);
+            parents[i].fitness = 1.0 / result[1];
+            parents[i].makeSpan = result[0];
         }
         //GLR机器选择
 
@@ -202,7 +204,9 @@ public class MyHybridAlgorithm {
                     parents[i] = p.get(i);
                 for (int i = num; i < this.popSize; i++) {
                     parents[i] = new Chromosome(jobs, r);
-                    parents[i].fitness = 1.0 / c.evaluate(parents[i], input, operationMatrix);
+                    int[] result = c.evaluate(parents[i], input, operationMatrix);
+                    parents[i].fitness = 1.0 / result[1];
+                    parents[i].makeSpan = result[0];
                 }
 
                 noImprove = gen;
@@ -237,9 +241,11 @@ public class MyHybridAlgorithm {
 //                parents[i] = new Chromosome(children[i]);
 //            }
             for (int i = 0; i < this.popSize; i++) {
-                children[i].fitness = 1.0 / c.evaluate(children[i], input, operationMatrix);
+                int[] result = c.evaluate(parents[i], input, operationMatrix);
+                children[i].fitness = 1.0 / result[1];
+                children[i].makeSpan = result[0];
                 int maxTSIterSize = (int) (maxGen * ((float) gen / (float) maxGen));
-                Solution sol = new Solution(operationMatrix, children[i], input, 1.0 / children[i].fitness);
+                Solution sol = new Solution(operationMatrix, children[i], input, children[i].makeSpan);
 
                 // TS1
                 sol = NeiborAl2.search(sol, maxTSIterSize);
@@ -278,7 +284,8 @@ public class MyHybridAlgorithm {
 
             gen++;
         }
-        Solution bestSolution = new Solution(operationMatrix, best, input, c.evaluate(best, input, operationMatrix));
+        int[] result = c.evaluate(best, input, operationMatrix);
+        Solution bestSolution = new Solution(operationMatrix, best, input, result[0]);
         System.out.println();
         System.out.println(" After " + gen + " generation, the best schedule cost is:" + bestSolution.cost);
 

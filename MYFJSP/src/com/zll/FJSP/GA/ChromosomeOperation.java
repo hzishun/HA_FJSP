@@ -374,8 +374,12 @@ public class ChromosomeOperation {
         int len = ms.length;
 
         int pos = r.nextInt(len);
-        int position = ms[pos];
         int machineCount = input.getMachineCountArr()[pos];
+        while (machineCount == 1) {
+            pos = r.nextInt(len);
+            machineCount = input.getMachineCountArr()[pos];
+        }
+        int position = ms[pos];
         int mutation = r.nextInt(machineCount) + 1;
         while(mutation == position) {
             mutation = r.nextInt(machineCount) + 1;

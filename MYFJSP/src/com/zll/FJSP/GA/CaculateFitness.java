@@ -2,6 +2,7 @@ package com.zll.FJSP.GA;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Random;
 
 import com.zll.FJSP.Data.Problem;
 import com.zll.FJSP.Data.Operation;
@@ -27,7 +28,7 @@ public class CaculateFitness {
 			index++;
 		}
 		index--;
-		
+
 		int[] machineNoAndTimeArr = new int[2];
 		machineNoAndTimeArr[0] = index;
 
@@ -67,13 +68,13 @@ public class CaculateFitness {
 
 	/**
 	 * 计算一条染色体（一个可行的调度）所耗费的最大时间
-	 * 
+	 *
 	 * @param dna    the dna array,an element represents a procedure of a job
 	 * @param length the DNA array length
 	 * @param input  the time and order information of the problem
 	 * @return the fitness of a sheduling
 	 */
-	public int evaluate(Chromosome chromosome, Problem input, Operation[][] operationMatrix) {
+	public int[] evaluate(Chromosome chromosome, Problem input, Operation[][] operationMatrix) {
 		int jobCount = input.getJobCount();
 		int machineCount = input.getMachineCount();
 		initOperationMatrix(operationMatrix);
@@ -92,11 +93,13 @@ public class CaculateFitness {
 		int operationTime = 0;
 		int machineNo = 0;
 		int machineNoAndTimeArr[] = new int[2];
+		int[] completeTime = new int[jobCount]; //记录每个工件的完工时间
 
 		for (int i = 0; i < chromosome.gene_OS.length; i++) {
 			jobNo = chromosome.gene_OS[i];// 工件名
 			operNo = operNoOfEachJob[jobNo]++;// 当前工件操作所在的工序数
-			
+			int lastOperNo = input.getOperationCountArr()[jobNo];// 当前工件的总工序数
+
 			//找到这道工序对应的机器编号以及加工时间
 			machineNoAndTimeArr = getMachineNoAndTime(input, chromosome.gene_MS, jobNo, operNo);
 			machineNo = machineNoAndTimeArr[0];
@@ -114,12 +117,15 @@ public class CaculateFitness {
 			operationMatrix[jobNo][operNo].machineNo = machineNo;
 			operationMatrix[jobNo][operNo].jobNo = jobNo;
 			operationMatrix[jobNo][operNo].task = operNo;
-			
+
 			for (int j = 0; j < machTimes[machineNo].size(); j++) {
 				int start = Math.max(operationMatrix[jobNo][operNo].aStartTime, machTimes[machineNo].get(j).start);
 				int end = start + operationTime;
 				// 对机器空闲的时间段，若可以加工，则加工，否则判断下一个空闲时间段
 				if (machTimes[machineNo].get(j).type == 0 && end <= machTimes[machineNo].get(j).end) {
+					if (operNo == lastOperNo - 1) {//判断是否为工件的最后一道工序
+						completeTime[jobNo] = end;
+					}
 					// 设置工序开始结束时间
 					operationMatrix[jobNo][operNo].startTime = start;
 					operationMatrix[jobNo][operNo].endTime = end;
@@ -136,27 +142,58 @@ public class CaculateFitness {
 					}
 					machTimes[machineNo].remove(j);
 					machTimes[machineNo].addAll(j, t);
-					
-				
+
+
 //					System.out.println("startTime "+operationMatrix[jobNo][operNo].startTime+
 //							",endTime "+operationMatrix[jobNo][operNo].endTime);
-					
+
 					break;
 				}
 			}
 
 		}
-		
+
+		int totalWeightedTardiness = 0;
+
+		for (int i = 0; i < jobCount; i++) {
+			Random random = new Random(1);
+			int sumMinProduceTime = 0;
+			for (int j = 0; j < input.getOperationCountArr()[i]; j++) {
+				int[] proDes = input.getProDesMatrix()[input.getOperationToIndex()[i][j]];
+				int min = Integer.MAX_VALUE;
+				for (int k = 0; k < proDes.length; k++) {
+					if (proDes[k] != 0 && proDes[k] < min) {
+						min = proDes[k];
+					}
+				}
+				sumMinProduceTime += min;
+			}
+			double aCoefficient = 1 + (0.3 * jobCount) / machineCount;
+			int dueTime = (int) Math.round(aCoefficient * sumMinProduceTime);//工件的交货期
+			int jobWeight = 0;
+			double randomNumber = random.nextDouble();
+			if (randomNumber < 0.2) jobWeight = 1;
+			else if (randomNumber < 0.4) jobWeight = 2;
+			else if (randomNumber < 0.6) jobWeight = 3;
+			else if (randomNumber < 0.8) jobWeight = 4;
+			else jobWeight = 5;
+			if (completeTime[i] > dueTime) totalWeightedTardiness += jobWeight * (completeTime[i] - dueTime); //拖期惩罚
+		}
+
 		int longestTime = 0;
 		for(int i = 0; i < machineCount; i++)
 			longestTime = Math.max(machTimes[i].get(machTimes[i].size() - 1).start , longestTime);
-		
-		return longestTime;
+//
+//		return longestTime;
+		int[] result = new int[2];
+		result[0] = longestTime;
+		result[1] = totalWeightedTardiness + 1;
+		return result;//加1避免出现0除
 	}
 
 	/**
 	 * 计算一条染色体（一个可行的调度）所耗费的最大时间
-	 * 
+	 *
 	 * @param dna    the dna array,an element represents a procedure of a job
 	 * @param length the DNA array length
 	 * @param input  the time and order information of the problem

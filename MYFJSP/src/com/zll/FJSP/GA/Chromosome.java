@@ -16,6 +16,7 @@ public class Chromosome implements Comparable<Chromosome>{
 	public int[] gene_MS;
 	public Random r;
 	public double fitness;
+	public int makeSpan = 0;
 
 	public Chromosome(Random r){
 		this.r = r;
@@ -47,6 +48,7 @@ public class Chromosome implements Comparable<Chromosome>{
 		}
 		
 		this.fitness = 0;
+		this.makeSpan = -1;
 	}
 	
 	public Chromosome(int[] OS,int[] MS, Random r) {
@@ -54,6 +56,7 @@ public class Chromosome implements Comparable<Chromosome>{
 		this.gene_MS = MS;
 		this.r = r;
 		this.fitness = -1;
+		this.makeSpan = -1;
 	}
 	
 	public Chromosome(Chromosome c) {
@@ -63,6 +66,7 @@ public class Chromosome implements Comparable<Chromosome>{
 		System.arraycopy(c.gene_OS, 0, this.gene_OS, 0, c.gene_OS.length);
 		this.r = c.r;
 		this.fitness = c.fitness;
+		this.makeSpan = c.makeSpan;
 	}
 
 	@Override
