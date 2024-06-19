@@ -67,17 +67,17 @@ public class MyHybridAlgorithm {
 
         // 初始化工件类entries
         int[][] operationToIndex = input.getOperationToIndex();
-        Job[] jobs = new Job[jobCount];
-        for (int i = 0; i < jobCount; i++) {
-            int index = i;// 工件编号
-            int opsNr = input.getOperationCountArr()[i];// 工件工序数
-            int[] opsIndex = operationToIndex[i];// 工件工序对应的index
-            int[] opsMacNr = new int[opsNr];// 工序对应备选机器数
-            for (int j = 0; j < opsNr; j++) {
-                opsMacNr[j] = input.getMachineCountArr()[opsIndex[j]];
-            }
-            jobs[i] = new Job(index, opsNr, opsIndex, opsMacNr);
-        }
+//        Job[] jobs = new Job[jobCount];
+//        for (int i = 0; i < jobCount; i++) {
+//            int index = i;// 工件编号
+//            int opsNr = input.getOperationCountArr()[i];// 工件工序数
+//            int[] opsIndex = operationToIndex[i];// 工件工序对应的index
+//            int[] opsMacNr = new int[opsNr];// 工序对应备选机器数
+//            for (int j = 0; j < opsNr; j++) {
+//                opsMacNr[j] = input.getMachineCountArr()[opsIndex[j]];
+//            }
+//            jobs[i] = new Job(index, opsNr, opsIndex, opsMacNr);
+//        }
 
         long startTime = System.currentTimeMillis();// 算法开始
 
@@ -85,83 +85,7 @@ public class MyHybridAlgorithm {
         Chromosome[] parents = new Chromosome[this.popSize];// 染色体
         //GLR机器选择法生成初始种群
         for (int i = 0; i < this.popSize; i++) {
-            double randomNumber = r.nextDouble();
-            int[] os = new int[input.getTotalOperationCount()];
-            List<Integer> osList = new ArrayList<>();//随机打乱使用
-            int[] ms = new int[input.getTotalOperationCount()];
-            if (randomNumber < global) {//全局搜索生成初始解
-                int[] totalMachineLoad = new int[machineCount];
-                List<Integer> jobList = new ArrayList<>();
-                for (int j = 0; j < jobCount; j++) {
-                    jobList.add(j);
-                }
-                Collections.shuffle(jobList, this.r);
-                for (int j = 0; j < jobCount; j++) {
-                    for (int k = 0; k < input.getOperationCountArr()[jobList.get(j)]; k++) {
-                        int machineIndex = 0;
-                        int mCount = 0;
-                        int tempIndex = 0;
-                        int min = Integer.MAX_VALUE;
-                        int operationIndex = operationToIndex[jobList.get(j)][k];
-                        int[] proDes = proDesMatrix[operationIndex];
-                        for (int l = 0; l < proDes.length; l++) {
-                            if (proDes[l] != 0) {
-                                mCount++;
-                                if (totalMachineLoad[l] + proDes[l] < min) {
-                                    min = totalMachineLoad[l] + proDes[l];
-                                    machineIndex = mCount;
-                                    tempIndex = l;
-                                }
-                            }
-                        }
-                        totalMachineLoad[tempIndex] += proDes[tempIndex];
-                        osList.add(jobList.get(j));
-                        ms[operationIndex] = machineIndex;// 有+1的 从1开始
-                    }
-                }
-            } else if (randomNumber < global + local) {//局部搜索生成初始解
-                for (int j = 0; j < jobCount; j++) {
-                    int[] tempMachineLoad = new int[machineCount];
-                    for (int k = 0; k < input.getOperationCountArr()[j]; k++) {
-                        int machineIndex = 0;
-                        int mCount = 0;//计可选机器出现的次数
-                        int tempIndex = 0;
-                        int min = Integer.MAX_VALUE;
-                        int operationIndex = operationToIndex[j][k];
-                        int[] proDes = proDesMatrix[operationIndex];
-                        for (int l = 0; l < proDes.length; l++) {
-                            if (proDes[l] != 0) {
-                                mCount++;
-                                if (tempMachineLoad[l] + proDes[l] < min) {
-                                    min = tempMachineLoad[l] + proDes[l];
-                                    machineIndex = mCount;
-                                    tempIndex = l;
-                                }
-                            }
-                        }
-                        tempMachineLoad[tempIndex] += proDes[tempIndex];
-                        osList.add(j);
-                        ms[operationIndex] = machineIndex;// 有+1的 从1开始
-                    }
-                }
-            } else {//随机过程生成初始解
-                for (int j = 0; j < jobCount; j++) {
-                    for (int k = 0; k < input.getOperationCountArr()[j]; k++) {
-                        int operationIndex = operationToIndex[j][k];
-                        osList.add(j);
-                        int maopr = input.getMachineCountArr()[operationIndex];
-                        ms[operationIndex] = r.nextInt(maopr) + 1;// 有+1的 从1开始
-                    }
-                }
-            }
-            Collections.shuffle(osList, this.r);
-            for (int j = 0; j < os.length; j++) {
-                os[j] = osList.get(j);
-            }
-            parents[i] = new Chromosome(os, ms, this.r);
-            int[] result = c.evaluate(parents[i], input, operationMatrix);
-            parents[i].fitness = 1.0 / result[1];
-            parents[i].makeSpan = result[0];
+            parents[i] = new Chromosome(GLRMachineSelection(jobCount, machineCount, proDesMatrix, c, operationToIndex));
         }
         //GLR机器选择
 
@@ -203,10 +127,11 @@ public class MyHybridAlgorithm {
                 for (int i = 0; i < num; i++)
                     parents[i] = p.get(i);
                 for (int i = num; i < this.popSize; i++) {
-                    parents[i] = new Chromosome(jobs, r);
-                    int[] result = c.evaluate(parents[i], input, operationMatrix);
-                    parents[i].fitness = 1.0 / result[1];
-                    parents[i].makeSpan = result[0];
+                    parents[i] = new Chromosome(GLRMachineSelection(jobCount, machineCount, proDesMatrix, c, operationToIndex));
+//                    parents[i] = new Chromosome(jobs, r);
+//                    int[] result = c.evaluate(parents[i], input, operationMatrix);
+//                    parents[i].fitness = 1.0 / result[1];
+//                    parents[i].makeSpan = result[0];
                 }
 
                 noImprove = gen;
@@ -294,6 +219,87 @@ public class MyHybridAlgorithm {
         bestSolution.algrithmTimeCost = (endTime - startTime) / 1000.0;
 
         return bestSolution;
+    }
+
+    private Chromosome GLRMachineSelection(int jobCount, int machineCount, int[][] proDesMatrix, CaculateFitness c, int[][] operationToIndex) {
+        double randomNumber = r.nextDouble();
+        int[] os = new int[input.getTotalOperationCount()];
+        List<Integer> osList = new ArrayList<>();//随机打乱使用
+        int[] ms = new int[input.getTotalOperationCount()];
+        if (randomNumber < global) {//全局搜索生成初始解
+            int[] totalMachineLoad = new int[machineCount];
+            List<Integer> jobList = new ArrayList<>();
+            for (int j = 0; j < jobCount; j++) {
+                jobList.add(j);
+            }
+            Collections.shuffle(jobList, this.r);
+            for (int j = 0; j < jobCount; j++) {
+                for (int k = 0; k < input.getOperationCountArr()[jobList.get(j)]; k++) {
+                    int machineIndex = 0;
+                    int mCount = 0;
+                    int tempIndex = 0;
+                    int min = Integer.MAX_VALUE;
+                    int operationIndex = operationToIndex[jobList.get(j)][k];
+                    int[] proDes = proDesMatrix[operationIndex];
+                    for (int l = 0; l < proDes.length; l++) {
+                        if (proDes[l] != 0) {
+                            mCount++;
+                            if (totalMachineLoad[l] + proDes[l] < min) {
+                                min = totalMachineLoad[l] + proDes[l];
+                                machineIndex = mCount;
+                                tempIndex = l;
+                            }
+                        }
+                    }
+                    totalMachineLoad[tempIndex] += proDes[tempIndex];
+                    osList.add(jobList.get(j));
+                    ms[operationIndex] = machineIndex;// 有+1的 从1开始
+                }
+            }
+        } else if (randomNumber < global + local) {//局部搜索生成初始解
+            for (int j = 0; j < jobCount; j++) {
+                int[] tempMachineLoad = new int[machineCount];
+                for (int k = 0; k < input.getOperationCountArr()[j]; k++) {
+                    int machineIndex = 0;
+                    int mCount = 0;//计可选机器出现的次数
+                    int tempIndex = 0;
+                    int min = Integer.MAX_VALUE;
+                    int operationIndex = operationToIndex[j][k];
+                    int[] proDes = proDesMatrix[operationIndex];
+                    for (int l = 0; l < proDes.length; l++) {
+                        if (proDes[l] != 0) {
+                            mCount++;
+                            if (tempMachineLoad[l] + proDes[l] < min) {
+                                min = tempMachineLoad[l] + proDes[l];
+                                machineIndex = mCount;
+                                tempIndex = l;
+                            }
+                        }
+                    }
+                    tempMachineLoad[tempIndex] += proDes[tempIndex];
+                    osList.add(j);
+                    ms[operationIndex] = machineIndex;// 有+1的 从1开始
+                }
+            }
+        } else {//随机过程生成初始解
+            for (int j = 0; j < jobCount; j++) {
+                for (int k = 0; k < input.getOperationCountArr()[j]; k++) {
+                    int operationIndex = operationToIndex[j][k];
+                    osList.add(j);
+                    int maopr = input.getMachineCountArr()[operationIndex];
+                    ms[operationIndex] = r.nextInt(maopr) + 1;// 有+1的 从1开始
+                }
+            }
+        }
+        Collections.shuffle(osList, this.r);
+        for (int j = 0; j < os.length; j++) {
+            os[j] = osList.get(j);
+        }
+        Chromosome parent = new Chromosome(os, ms, this.r);
+        int[] result = c.evaluate(parent, input, operationMatrix);
+        parent.fitness = 1.0 / result[1];
+        parent.makeSpan = result[0];
+        return parent;
     }
 
     private Chromosome getBest(Chromosome[] parents) {
