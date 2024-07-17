@@ -173,7 +173,7 @@ public class MyHybridAlgorithm {
                 Solution sol = new Solution(operationMatrix, children[i], input, children[i].makeSpan);
 
                 // TS1
-                sol = NeiborAl2.search(sol, maxTSIterSize);
+//                sol = NeiborAl2.search(sol, maxTSIterSize);
 
                 // TS2
 //                sol = NeighbourAlgorithms.neighbourSearch(sol);

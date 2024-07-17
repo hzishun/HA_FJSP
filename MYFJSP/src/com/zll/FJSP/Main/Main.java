@@ -57,7 +57,7 @@ public class Main {
             }
         }
 
-        printToCSV("HA FJSP test" + new Date().getTime() + ".csv", resultGA);
+//        printToCSV("HA FJSP test" + new Date().getTime() + ".csv", resultGA);
     }
 
     public static void printToCSV(String FILE_NAME, double[][][] result) {
