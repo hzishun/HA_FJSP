@@ -1,6 +1,6 @@
 package com.zll.FJSP.Data;
 
-public class timeWindow {
+public class timeWindow implements Comparable<timeWindow> {
     public int jobNo;
     public int startOperNo;
     public int endOperNo;
@@ -17,5 +17,10 @@ public class timeWindow {
         this.startOperNo = -1;
         this.endOperNo = -1;
         this.waitingTime = -1;
+    }
+
+    @Override
+    public int compareTo(timeWindow o) {
+        return this.startOperNo - o.startOperNo;
     }
 }

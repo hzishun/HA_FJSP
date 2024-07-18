@@ -138,59 +138,165 @@ public class Input {
 		timeWindow[][] TWMatrix = new timeWindow[jobCount][];
 		for (int i = 0; i < jobCount; i++) {
 			int operNum = operationCountArr[i];
-			int pointNum = r.nextInt(operNum) * 2;
-			List<Integer> chosenNum = new ArrayList<>();//记录被选中的点
-			int randomNum;
-			//获得节点序列
-			while (pointNum > 0) {
-				do {
-					randomNum = r.nextInt(operNum * 2);
-				} while (chosenNum.contains(randomNum));
-				chosenNum.add(randomNum);
-				pointNum--;
+			//类似分配过程将工序分段
+			List<int[]> totalList = new ArrayList<>();
+			int[] initMatrix = new int[operNum];
+			List<timeWindow> TWList = new ArrayList<>();
+
+			for (int j = 0; j < operNum; j++) {
+				initMatrix[j] = j;
 			}
-			if (chosenNum.size() != 0) {
-				Collections.sort(chosenNum);
-			} else {
-				continue;
+			totalList.add(initMatrix);
+
+			while (totalList.size() > 0) {
+
+				int startNode;
+				int endNode;
+				int length = totalList.get(0).length;
+				if (length == 2) {//直接指定起始和结束点
+					startNode = 0;
+					endNode = 1;
+				} else {
+					do {
+						startNode = r.nextInt(length - 1);//不能选最后一个工序作为时间窗起始节点
+						endNode = r.nextInt(length - 1) + 1;//不能选第一个工序作为时间窗结束节点
+					} while (startNode == endNode);
+				}
+
+				if (startNode > endNode) {//调整大小
+					int temp = startNode;
+					startNode = endNode;
+					endNode = temp;
+				}
+
+				int startOperNo;
+				int endOperNo;
+				int waitingTime = 0;
+
+				startOperNo = totalList.get(0)[startNode];
+				endOperNo = totalList.get(0)[endNode];
+
+				for (int j = 0; j < endOperNo - startOperNo; j++) {
+					waitingTime += r.nextInt(averageProduceTime) + averageProduceTime;
+				}
+
+				TWList.add(new timeWindow(i, startOperNo, endOperNo, waitingTime));
+				//把工序分为左右两部分
+				int[] leftMatrix = new int[startNode + 1];
+				int[] rightMatrix = new int[length - endNode];
+
+				if (startNode > 0) {
+					System.arraycopy(totalList.get(0), 0, leftMatrix, 0, startNode + 1);
+					totalList.add(leftMatrix);
+				}
+
+				if (length - endNode > 1) {
+					System.arraycopy(totalList.get(0), endNode, rightMatrix, 0, length - endNode);
+					totalList.add(rightMatrix);
+				}
+
+				totalList.remove(0);
 			}
-			//首尾节点数不能为2
-			if (chosenNum.get(0) / 2 == chosenNum.get(1) / 2) {
-				int startNum = chosenNum.get(0) / 2;
-				int endNum = chosenNum.get(chosenNum.size() - 1) / 2;
-				chosenNum.remove(0);
-				do {
-					randomNum = r.nextInt(operNum * 2) + 1;
-				} while (chosenNum.contains(randomNum) || randomNum == startNum || randomNum == endNum);
-				chosenNum.add(randomNum);
-				Collections.sort(chosenNum);
+			//copy一下
+			TWMatrix[i] = new timeWindow[TWList.size()];
+			Collections.sort(TWList);
+			for (int j = 0; j < TWList.size(); j++) {
+				TWMatrix[i][j] = TWList.get(j);
 			}
-			if (chosenNum.get(chosenNum.size() - 1) / 2 == chosenNum.get(chosenNum.size() - 2) / 2) {
-				int startNum = chosenNum.get(0) / 2;
-				int endNum = chosenNum.get(chosenNum.size() - 1) / 2;
-				chosenNum.remove(chosenNum.size() - 1);
-				do {
-					randomNum = r.nextInt(operNum * 2) + 1;
-				} while (chosenNum.contains(randomNum) || randomNum == startNum || randomNum == endNum);
-				chosenNum.add(randomNum);
-				Collections.sort(chosenNum);
-			}
+			//分成起始和结尾节点直接指定时间窗
+//			List<Integer> startNodeList = new ArrayList<>();
+//			List<Integer> endNodeList = new ArrayList<>();
+//			List<timeWindow> TWList = new ArrayList<>();
+//			int startNode;
+//			int endNode;
+//
+//			for (int j = 0; j < operNum; j++) {
+//				startNodeList.add(j);
+//				endNodeList.add(j);
+//			}
+//
+//			do {
+//				startNode = r.nextInt(startNodeList.size() - 1);//不能选最后一个工序作为时间窗起始节点
+//				endNode = r.nextInt(endNodeList.size()) + 1;//不能选第一个工序作为时间窗结束节点
+//			} while (startNode == endNode);
+//
+//			int startOperNo;
+//			int endOperNo;
+//			int waitingTime = 0;
+//
+//			startOperNo = startNodeList.get(startNode);
+//			endOperNo = endNodeList.get(endNode);
+//			int countNum = endOperNo - startOperNo;
+//			int countNumber = countNum;
+//			for (int j = 0; j < countNum; j++) {
+//				waitingTime += r.nextInt(averageProduceTime) + averageProduceTime;
+//			}
+//
+//			while (countNum > 0) {
+//				startNodeList.remove(startNode);
+//				endNodeList.remove(endNode - countNumber + countNum);
+//				countNum--;
+//			}
+//
+//			TWList.add(new timeWindow(jobNo, startOperNo, endOperNo, waitingTime));
+
+
+//			int pointNum = r.nextInt(operNum) * 2;
+//			List<Integer> chosenNum = new ArrayList<>();//记录被选中的点
+//			int randomNum;
+//			//获得节点序列
+//			while (pointNum > 0) {
+//				do {
+//					randomNum = r.nextInt(operNum * 2);
+//				} while (chosenNum.contains(randomNum));
+//				chosenNum.add(randomNum);
+//				pointNum--;
+//			}
+//			if (chosenNum.size() != 0) {
+//				Collections.sort(chosenNum);
+//			} else {
+//				continue;
+//			}
+//			//首尾节点数不能为2
+//			if (chosenNum.get(0) / 2 == chosenNum.get(1) / 2) {
+//				int startNum = chosenNum.get(0) / 2;
+//				int endNum = chosenNum.get(chosenNum.size() - 1) / 2;
+//				chosenNum.remove(0);
+//				do {
+//					randomNum = r.nextInt(operNum * 2) + 1;
+//				} while (chosenNum.contains(randomNum) || randomNum == startNum || randomNum == endNum);
+//				chosenNum.add(randomNum);
+//				Collections.sort(chosenNum);
+//			}
+//			if (chosenNum.get(chosenNum.size() - 1) / 2 == chosenNum.get(chosenNum.size() - 2) / 2) {
+//				int startNum = chosenNum.get(0) / 2;
+//				int endNum = chosenNum.get(chosenNum.size() - 1) / 2;
+//				chosenNum.remove(chosenNum.size() - 1);
+//				do {
+//					randomNum = r.nextInt(operNum * 2) + 1;
+//				} while (chosenNum.contains(randomNum) || randomNum == startNum || randomNum == endNum);
+//				chosenNum.add(randomNum);
+//				Collections.sort(chosenNum);
+//			}
 
 			//随机生成时间窗时间并记录时间窗序列
-			int size = chosenNum.size() / 2;
-			timeWindow[] TWs = new timeWindow[size];
-			for (int j = 0; j < size; j++) {
-				int jobNo = i;
-				int startOperNo = chosenNum.get(2 * j) / 2;//工序从0开始
-				int endOperNo = chosenNum.get(2 * j + 1) / 2;
-				int waitingTime = 0;
-				for (int k = 0; k < endOperNo - startOperNo; k++) {
-					waitingTime += r.nextInt(averageProduceTime * 2) + averageProduceTime;
-				}
-				TWs[j] = new timeWindow(jobNo, startOperNo, endOperNo, waitingTime);
-			}
-			TWMatrix[i] = TWs;
+//			int size = chosenNum.size() / 2;
+//			timeWindow[] TWs = new timeWindow[size];
+//			for (int j = 0; j < size; j++) {
+//				int jobNo = i;
+//				int startOperNo = chosenNum.get(2 * j) / 2;//工序从0开始
+//				int endOperNo = chosenNum.get(2 * j + 1) / 2;
+//				int waitingTime = 0;
+//				for (int k = 0; k < endOperNo - startOperNo; k++) {
+//					waitingTime += r.nextInt(averageProduceTime * 2) + averageProduceTime;
+//				}
+//				TWs[j] = new timeWindow(jobNo, startOperNo, endOperNo, waitingTime);
+//			}
+//			TWMatrix[i] = TWs;
+
+
 		}
+		input.setTWMatrix(TWMatrix);
 		return input;
 	}
 
