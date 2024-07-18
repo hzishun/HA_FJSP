@@ -14,7 +14,7 @@ public class Operation {
 	public int aStartTime;
 	public int machineNo;
 	public int span;
-	public int recipe;
+	public int timeWindow;
 	public String id;
 
 	public Operation() {

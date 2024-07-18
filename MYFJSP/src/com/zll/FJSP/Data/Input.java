@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 
 public class Input {
 	private File file;
@@ -36,13 +37,13 @@ public class Input {
 		int[] operationCountArr = null;
 		int[] machineCountArr = null;
 		List<Integer> operationCountList = new ArrayList<Integer>();// 存储每个工序的备选机器数目
-		
+
 		try {
 			proDesString = reader.readLine();
 			String proDesArr[] = proDesString.split("\\s+");
 			int jobNum = Integer.valueOf(proDesArr[0]);// 工件数
 			int machineNum = Integer.valueOf(proDesArr[1]);// 机器数
-			
+
 			operationCountArr = new int[jobNum];
 			input.setJobCount(jobNum);
 			input.setMachineCount(machineNum);
@@ -111,6 +112,25 @@ public class Input {
 			reader.close();
 		} catch (IOException e) {
 			e.printStackTrace();
+		}
+
+		//随机生成算例的时间窗约束
+
+		Random r = new Random(114514);
+//		int totalOperationCount = input.getTotalOperationCount();
+//		int upper = (int) Math.round(((double) totalOperationCount / 3) * 0.6);
+//		int lowwer = (int) Math.round(((double) totalOperationCount / 5) * 0.7);
+//		int twNumber = r.nextInt(upper - lowwer) + lowwer;
+//		int count = 0;//计数防止死循环
+//
+//		List<Integer> tabuNumber = new ArrayList<>();//记录选择的工序
+//		while (twNumber > 0 && count <= 100) {
+//
+//		}
+		int jobCount = input.getJobCount();
+		for (int i = 0; i < jobCount; i++) {
+			int operNum = operationCountArr[i];
+			int pointNum = r.nextInt(operNum);
 		}
 		return input;
 	}

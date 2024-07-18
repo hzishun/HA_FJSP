@@ -92,7 +92,7 @@ public class CaculateFitness {
 		int operNo = 0;
 		int operationTime = 0;
 		int machineNo = 0;
-		int machineNoAndTimeArr[] = new int[2];
+		int[] machineNoAndTimeArr;
 		int[] completeTime = new int[jobCount]; //记录每个工件的完工时间
 
 		for (int i = 0; i < chromosome.gene_OS.length; i++) {
