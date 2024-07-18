@@ -12,10 +12,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 public class Input {
 	private File file;
@@ -25,7 +22,6 @@ public class Input {
 	}
 
 	/**
-	 * @param file the problem description stored location
 	 * @return the problem description which has been arranged
 	 */
 	public Problem getProblemDesFromFile() {
@@ -116,6 +112,17 @@ public class Input {
 
 		//随机生成算例的时间窗约束
 
+		int sum = 0;
+		int count = 0;
+		for (int i = 0; i < proDesMatrix.length; i++) {
+			int[] productionMatrix = proDesMatrix[i];
+			for (int j = 0; j < productionMatrix.length && productionMatrix[j] != 0; j++) {
+				sum += productionMatrix[j];
+				count++;
+			}
+		}
+		int averageProduceTime = sum / count;//计算平均加工时间长
+
 		Random r = new Random(114514);
 //		int totalOperationCount = input.getTotalOperationCount();
 //		int upper = (int) Math.round(((double) totalOperationCount / 3) * 0.6);
@@ -128,9 +135,61 @@ public class Input {
 //
 //		}
 		int jobCount = input.getJobCount();
+		timeWindow[][] TWMatrix = new timeWindow[jobCount][];
 		for (int i = 0; i < jobCount; i++) {
 			int operNum = operationCountArr[i];
-			int pointNum = r.nextInt(operNum);
+			int pointNum = r.nextInt(operNum) * 2;
+			List<Integer> chosenNum = new ArrayList<>();//记录被选中的点
+			int randomNum;
+			//获得节点序列
+			while (pointNum > 0) {
+				do {
+					randomNum = r.nextInt(operNum * 2);
+				} while (chosenNum.contains(randomNum));
+				chosenNum.add(randomNum);
+				pointNum--;
+			}
+			if (chosenNum.size() != 0) {
+				Collections.sort(chosenNum);
+			} else {
+				continue;
+			}
+			//首尾节点数不能为2
+			if (chosenNum.get(0) / 2 == chosenNum.get(1) / 2) {
+				int startNum = chosenNum.get(0) / 2;
+				int endNum = chosenNum.get(chosenNum.size() - 1) / 2;
+				chosenNum.remove(0);
+				do {
+					randomNum = r.nextInt(operNum * 2) + 1;
+				} while (chosenNum.contains(randomNum) || randomNum == startNum || randomNum == endNum);
+				chosenNum.add(randomNum);
+				Collections.sort(chosenNum);
+			}
+			if (chosenNum.get(chosenNum.size() - 1) / 2 == chosenNum.get(chosenNum.size() - 2) / 2) {
+				int startNum = chosenNum.get(0) / 2;
+				int endNum = chosenNum.get(chosenNum.size() - 1) / 2;
+				chosenNum.remove(chosenNum.size() - 1);
+				do {
+					randomNum = r.nextInt(operNum * 2) + 1;
+				} while (chosenNum.contains(randomNum) || randomNum == startNum || randomNum == endNum);
+				chosenNum.add(randomNum);
+				Collections.sort(chosenNum);
+			}
+
+			//随机生成时间窗时间并记录时间窗序列
+			int size = chosenNum.size() / 2;
+			timeWindow[] TWs = new timeWindow[size];
+			for (int j = 0; j < size; j++) {
+				int jobNo = i;
+				int startOperNo = chosenNum.get(2 * j) / 2;//工序从0开始
+				int endOperNo = chosenNum.get(2 * j + 1) / 2;
+				int waitingTime = 0;
+				for (int k = 0; k < endOperNo - startOperNo; k++) {
+					waitingTime += r.nextInt(averageProduceTime * 2) + averageProduceTime;
+				}
+				TWs[j] = new timeWindow(jobNo, startOperNo, endOperNo, waitingTime);
+			}
+			TWMatrix[i] = TWs;
 		}
 		return input;
 	}

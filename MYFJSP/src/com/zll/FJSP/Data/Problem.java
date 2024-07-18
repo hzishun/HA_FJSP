@@ -14,13 +14,13 @@ public class Problem {
 	private int maxOperationCount = 0;// the max operation count for the whole job
 	private int totalOperationCount = 0;// the total operation count for the whole job
 	private int[][] operationToIndex;// the index of some operation of some job 第i个工件第j道工序对应的index
-	private timeWindow[] TWMatrix;//记录时间窗约束的矩阵
+	private timeWindow[][] TWMatrix;//记录时间窗约束的矩阵
 
-	public timeWindow[] getTWMatrix() {
+	public timeWindow[][] getTWMatrix() {
 		return TWMatrix;
 	}
 
-	public void setTWMatrix(timeWindow[] TWMatrix) {
+	public void setTWMatrix(timeWindow[][] TWMatrix) {
 		this.TWMatrix = TWMatrix;
 	}
 
