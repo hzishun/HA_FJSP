@@ -141,6 +141,7 @@ public class Input {
 			//类似分配过程将工序分段
 			List<int[]> totalList = new ArrayList<>();
 			int[] initMatrix = new int[operNum];
+			int TWNumber = r.nextInt(operNum);
 			List<timeWindow> TWList = new ArrayList<>();
 
 			for (int j = 0; j < operNum; j++) {
@@ -148,7 +149,7 @@ public class Input {
 			}
 			totalList.add(initMatrix);
 
-			while (totalList.size() > 0) {
+			while (totalList.size() > 0 && TWList.size() < TWNumber) {
 
 				int startNode;
 				int endNode;
