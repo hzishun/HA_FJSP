@@ -6,6 +6,7 @@ import java.util.Random;
 
 import com.zll.FJSP.Data.Problem;
 import com.zll.FJSP.Data.Operation;
+import com.zll.FJSP.Data.Time;
 import com.zll.FJSP.Data.timeWindow;
 
 public class CaculateFitness {
@@ -52,36 +53,6 @@ public class CaculateFitness {
 		for (i = 0; i < operationMatrix.length; i++) {
 			for (j = 0; j < operationMatrix[i].length; j++)
 				operationMatrix[i][j].initOperation();
-		}
-	}
-
-	public class Time {
-		int start;
-		int end;
-		int type;// 0为工作,1为空闲。
-		int jobNo;
-		int operNo;
-
-		Time(int s, int e, int t) {
-			this.start = s;
-			this.end = e;
-			this.type = t;
-			this.jobNo = -1;
-			this.operNo = -1;
-		}
-		Time(int s, int e, int t, int j, int o) {
-			this.start = s;
-			this.end = e;
-			this.type = t;
-			this.jobNo = j;
-			this.operNo = o;
-		}
-		Time(Time t) {
-			this.start = t.start;
-			this.end = t.end;
-			this.type = t.type;
-			this.jobNo = t.jobNo;
-			this.operNo = t.operNo;
 		}
 	}
 
@@ -140,36 +111,36 @@ public class CaculateFitness {
 			operationMatrix[jobNo][operNo].task = operNo;
 
 			for (int j = 0; j < machTimes[machineNo].size(); j++) {
-				int start = Math.max(operationMatrix[jobNo][operNo].aStartTime, machTimes[machineNo].get(j).start);
-				int end = start + operationTime;
-				// 对机器空闲的时间段，若可以加工，则加工，否则判断下一个空闲时间段
-				if (machTimes[machineNo].get(j).type == 0 && end <= machTimes[machineNo].get(j).end) {
-					if (operNo == lastOperNo - 1) {//判断是否为工件的最后一道工序
-						completeTime[jobNo] = end;
-					}
-					// 设置工序开始结束时间
-					operationMatrix[jobNo][operNo].startTime = start;
-					operationMatrix[jobNo][operNo].endTime = end;
-					// 更新机器时间段
-					ArrayList<Time> t = new ArrayList<>();
-					if (operationMatrix[jobNo][operNo].aStartTime > machTimes[machineNo].get(j).start) {
-						t.add(new Time(machTimes[machineNo].get(j).start, operationMatrix[jobNo][operNo].aStartTime, 0));
-						t.add(new Time(operationMatrix[jobNo][operNo].aStartTime, end, 1));
-					} else {
-						t.add(new Time(machTimes[machineNo].get(j).start, end, 1));
-					}
-					if (end < machTimes[machineNo].get(j).end) {
-						t.add(new Time(end, machTimes[machineNo].get(j).end, 0));
-					}
-					machTimes[machineNo].remove(j);
-					machTimes[machineNo].addAll(j, t);
+					int start = Math.max(operationMatrix[jobNo][operNo].aStartTime, machTimes[machineNo].get(j).start);
+					int end = start + operationTime;
+					// 对机器空闲的时间段，若可以加工，则加工，否则判断下一个空闲时间段
+					if (machTimes[machineNo].get(j).type == 0 && end <= machTimes[machineNo].get(j).end) {
+						if (operNo == lastOperNo - 1) {//判断是否为工件的最后一道工序
+							completeTime[jobNo] = end;
+						}
+						// 设置工序开始结束时间
+						operationMatrix[jobNo][operNo].startTime = start;
+						operationMatrix[jobNo][operNo].endTime = end;
+						// 更新机器时间段
+						ArrayList<Time> t = new ArrayList<>();
+						if (operationMatrix[jobNo][operNo].aStartTime > machTimes[machineNo].get(j).start) {
+							t.add(new Time(machTimes[machineNo].get(j).start, operationMatrix[jobNo][operNo].aStartTime, 0));
+							t.add(new Time(operationMatrix[jobNo][operNo].aStartTime, end, 1, jobNo, operNo));
+						} else {
+							t.add(new Time(machTimes[machineNo].get(j).start, end, 1, jobNo, operNo));
+						}
+						if (end < machTimes[machineNo].get(j).end) {
+							t.add(new Time(end, machTimes[machineNo].get(j).end, 0));
+						}
+						machTimes[machineNo].remove(j);
+						machTimes[machineNo].addAll(j, t);
 
 
 //					System.out.println("startTime "+operationMatrix[jobNo][operNo].startTime+
 //							",endTime "+operationMatrix[jobNo][operNo].endTime);
 
-					break;
-				}
+						break;
+					}
 			}
 			//判断时间窗约束
 			int currentPointer = pointer[jobNo];
@@ -187,7 +158,38 @@ public class CaculateFitness {
 
 					rWaitingTime = endTime - startTime - sumProTime;
 					if (rWaitingTime > tw.waitingTime) {
+						for (int j = 0; j < machTimes[machineNo].size(); j++) {
+							int start = Math.max(operationMatrix[jobNo][operNo].aStartTime, machTimes[machineNo].get(j).start);
+							int end = start + operationTime;
+							// 对机器空闲的时间段，若可以加工，则加工，否则判断下一个空闲时间段
+							if (machTimes[machineNo].get(j).type == 0 && end <= machTimes[machineNo].get(j).end) {
+								if (operNo == lastOperNo - 1) {//判断是否为工件的最后一道工序
+									completeTime[jobNo] = end;
+								}
+								// 设置工序开始结束时间
+								operationMatrix[jobNo][operNo].startTime = start;
+								operationMatrix[jobNo][operNo].endTime = end;
+								// 更新机器时间段
+								ArrayList<Time> t = new ArrayList<>();
+								if (operationMatrix[jobNo][operNo].aStartTime > machTimes[machineNo].get(j).start) {
+									t.add(new Time(machTimes[machineNo].get(j).start, operationMatrix[jobNo][operNo].aStartTime, 0));
+									t.add(new Time(operationMatrix[jobNo][operNo].aStartTime, end, 1, jobNo, operNo));
+								} else {
+									t.add(new Time(machTimes[machineNo].get(j).start, end, 1, jobNo, operNo));
+								}
+								if (end < machTimes[machineNo].get(j).end) {
+									t.add(new Time(end, machTimes[machineNo].get(j).end, 0));
+								}
+								machTimes[machineNo].remove(j);
+								machTimes[machineNo].addAll(j, t);
 
+
+//					System.out.println("startTime "+operationMatrix[jobNo][operNo].startTime+
+//							",endTime "+operationMatrix[jobNo][operNo].endTime);
+
+								break;
+							}
+						}
 					}
 					pointer[jobNo]++;
 				}
