@@ -35,6 +35,13 @@ public class Time {
         this.operNo = t.operNo;
     }
 
+    public Time(int j, int o) {
+        this.start = -1;
+        this.end = -1;
+        this.type = -1;
+        this.jobNo = j;
+        this.operNo = o;
+    }
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

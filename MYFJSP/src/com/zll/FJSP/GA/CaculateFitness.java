@@ -89,7 +89,7 @@ public class CaculateFitness {
 
 		for (int i = 0; i < chromosome.gene_OS.length; i++) {
 			jobNo = chromosome.gene_OS[i];// 工件名
-			operNo = operNoOfEachJob[jobNo]++;// 当前工件操作所在的工序数 , 从1开始
+			operNo = operNoOfEachJob[jobNo]++;// 当前工件操作所在的工序数 , 从0开始
 			int lastOperNo = input.getOperationCountArr()[jobNo];// 当前工件的总工序数
 
 			//找到这道工序对应的机器编号以及加工时间
@@ -111,36 +111,36 @@ public class CaculateFitness {
 			operationMatrix[jobNo][operNo].task = operNo;
 
 			for (int j = 0; j < machTimes[machineNo].size(); j++) {
-					int start = Math.max(operationMatrix[jobNo][operNo].aStartTime, machTimes[machineNo].get(j).start);
-					int end = start + operationTime;
-					// 对机器空闲的时间段，若可以加工，则加工，否则判断下一个空闲时间段
-					if (machTimes[machineNo].get(j).type == 0 && end <= machTimes[machineNo].get(j).end) {
-						if (operNo == lastOperNo - 1) {//判断是否为工件的最后一道工序
-							completeTime[jobNo] = end;
-						}
-						// 设置工序开始结束时间
-						operationMatrix[jobNo][operNo].startTime = start;
-						operationMatrix[jobNo][operNo].endTime = end;
-						// 更新机器时间段
-						ArrayList<Time> t = new ArrayList<>();
-						if (operationMatrix[jobNo][operNo].aStartTime > machTimes[machineNo].get(j).start) {
-							t.add(new Time(machTimes[machineNo].get(j).start, operationMatrix[jobNo][operNo].aStartTime, 0));
-							t.add(new Time(operationMatrix[jobNo][operNo].aStartTime, end, 1, jobNo, operNo));
-						} else {
-							t.add(new Time(machTimes[machineNo].get(j).start, end, 1, jobNo, operNo));
-						}
-						if (end < machTimes[machineNo].get(j).end) {
-							t.add(new Time(end, machTimes[machineNo].get(j).end, 0));
-						}
-						machTimes[machineNo].remove(j);
-						machTimes[machineNo].addAll(j, t);
+				int start = Math.max(operationMatrix[jobNo][operNo].aStartTime, machTimes[machineNo].get(j).start);
+				int end = start + operationTime;
+				// 对机器空闲的时间段，若可以加工，则加工，否则判断下一个空闲时间段
+				if (machTimes[machineNo].get(j).type == 0 && end <= machTimes[machineNo].get(j).end) {
+					if (operNo == lastOperNo - 1) {//判断是否为工件的最后一道工序
+						completeTime[jobNo] = end;
+					}
+					// 设置工序开始结束时间
+					operationMatrix[jobNo][operNo].startTime = start;
+					operationMatrix[jobNo][operNo].endTime = end;
+					// 更新机器时间段
+					ArrayList<Time> t = new ArrayList<>();
+					if (operationMatrix[jobNo][operNo].aStartTime > machTimes[machineNo].get(j).start) {
+						t.add(new Time(machTimes[machineNo].get(j).start, operationMatrix[jobNo][operNo].aStartTime, 0));
+						t.add(new Time(operationMatrix[jobNo][operNo].aStartTime, end, 1, jobNo, operNo));
+					} else {
+						t.add(new Time(machTimes[machineNo].get(j).start, end, 1, jobNo, operNo));
+					}
+					if (end < machTimes[machineNo].get(j).end) {
+						t.add(new Time(end, machTimes[machineNo].get(j).end, 0));
+					}
+					machTimes[machineNo].remove(j);
+					machTimes[machineNo].addAll(j, t);
 
 
 //					System.out.println("startTime "+operationMatrix[jobNo][operNo].startTime+
 //							",endTime "+operationMatrix[jobNo][operNo].endTime);
 
-						break;
-					}
+					break;
+				}
 			}
 			//判断时间窗约束
 			int currentPointer = pointer[jobNo];
@@ -158,36 +158,38 @@ public class CaculateFitness {
 
 					rWaitingTime = endTime - startTime - sumProTime;
 					if (rWaitingTime > tw.waitingTime) {
-						for (int j = 0; j < machTimes[machineNo].size(); j++) {
-							int start = Math.max(operationMatrix[jobNo][operNo].aStartTime, machTimes[machineNo].get(j).start);
-							int end = start + operationTime;
-							// 对机器空闲的时间段，若可以加工，则加工，否则判断下一个空闲时间段
-							if (machTimes[machineNo].get(j).type == 0 && end <= machTimes[machineNo].get(j).end) {
-								if (operNo == lastOperNo - 1) {//判断是否为工件的最后一道工序
-									completeTime[jobNo] = end;
-								}
-								// 设置工序开始结束时间
-								operationMatrix[jobNo][operNo].startTime = start;
-								operationMatrix[jobNo][operNo].endTime = end;
-								// 更新机器时间段
-								ArrayList<Time> t = new ArrayList<>();
-								if (operationMatrix[jobNo][operNo].aStartTime > machTimes[machineNo].get(j).start) {
-									t.add(new Time(machTimes[machineNo].get(j).start, operationMatrix[jobNo][operNo].aStartTime, 0));
-									t.add(new Time(operationMatrix[jobNo][operNo].aStartTime, end, 1, jobNo, operNo));
-								} else {
-									t.add(new Time(machTimes[machineNo].get(j).start, end, 1, jobNo, operNo));
-								}
-								if (end < machTimes[machineNo].get(j).end) {
-									t.add(new Time(end, machTimes[machineNo].get(j).end, 0));
-								}
-								machTimes[machineNo].remove(j);
-								machTimes[machineNo].addAll(j, t);
-
+						for (int j = tw.startOperNo; j <= tw.endOperNo; j++) {
+							Time time = new Time(tw.jobNo, j);
+							int machNo = operationMatrix[jobNo][j].machineNo;
+							int startIndex = machTimes[machNo].indexOf(time);
+							for (int k = startIndex + 1; k < machTimes[machNo].size(); k++) {
+								int start = Math.max(operationMatrix[jobNo][j].aStartTime, machTimes[machNo].get(k).start);
+								int end = start + operationTime;
+								// 对机器空闲的时间段，若可以加工，则加工，否则判断下一个空闲时间段
+								if (machTimes[machNo].get(k).type == 0 && end <= machTimes[machNo].get(k).end) {
+									// 更新机器时间段
+									ArrayList<Time> t = new ArrayList<>();
+									if (operationMatrix[jobNo][j].aStartTime > machTimes[machNo].get(k).start) {
+										t.add(new Time(machTimes[machNo].get(k).start, operationMatrix[jobNo][j].aStartTime, 0));
+										t.add(new Time(operationMatrix[jobNo][j].aStartTime, end, 1, jobNo, j));
+									} else {
+										t.add(new Time(machTimes[machNo].get(k).start, end, 1, jobNo, j));
+									}
+									if (end < machTimes[machNo].get(k).end) {
+										t.add(new Time(end, machTimes[machNo].get(k).end, 0));
+									}
+									machTimes[machNo].remove(k);
+									machTimes[machNo].addAll(k, t);
+									Time startIndexTime = new Time(machTimes[machNo].get(startIndex));
+									time = new Time(startIndexTime.start, startIndexTime.end, 0);
+									machTimes[machNo].remove(startIndex);
+									machTimes[machNo].add(startIndex, time);
 
 //					System.out.println("startTime "+operationMatrix[jobNo][operNo].startTime+
 //							",endTime "+operationMatrix[jobNo][operNo].endTime);
 
-								break;
+									break;
+								}
 							}
 						}
 					}
