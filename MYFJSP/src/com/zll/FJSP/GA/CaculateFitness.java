@@ -6,6 +6,7 @@ import java.util.Random;
 
 import com.zll.FJSP.Data.Problem;
 import com.zll.FJSP.Data.Operation;
+import com.zll.FJSP.Data.timeWindow;
 
 public class CaculateFitness {
 
@@ -82,7 +83,7 @@ public class CaculateFitness {
 		int[] operNoOfEachJob = new int[jobCount];// 当前处理到工件的工序No
 		Arrays.fill(operNoOfEachJob, 0);
 
-		ArrayList<Time> machTimes[] = new ArrayList[machineCount];// 机器的时间段
+		ArrayList<Time>[] machTimes = new ArrayList[machineCount];// 机器的时间段
 		for (int i = 0; i < machineCount; i++) {
 			machTimes[i] = new ArrayList<>();
 			machTimes[i].add(new Time(0, Integer.MAX_VALUE, 0));
@@ -94,10 +95,12 @@ public class CaculateFitness {
 		int machineNo = 0;
 		int[] machineNoAndTimeArr;
 		int[] completeTime = new int[jobCount]; //记录每个工件的完工时间
+		int[] pointer = new int[jobCount];//指针合集
+		timeWindow[][] TWMatrix = input.getTWMatrix();//导入时间窗约束
 
 		for (int i = 0; i < chromosome.gene_OS.length; i++) {
 			jobNo = chromosome.gene_OS[i];// 工件名
-			operNo = operNoOfEachJob[jobNo]++;// 当前工件操作所在的工序数
+			operNo = operNoOfEachJob[jobNo]++;// 当前工件操作所在的工序数 , 从1开始
 			int lastOperNo = input.getOperationCountArr()[jobNo];// 当前工件的总工序数
 
 			//找到这道工序对应的机器编号以及加工时间
@@ -150,7 +153,27 @@ public class CaculateFitness {
 					break;
 				}
 			}
+			//判断时间窗约束
+			int currentPointer = pointer[jobNo];
+			if (TWMatrix[jobNo].length != 0 && currentPointer < TWMatrix[jobNo].length) {//防空指针异常、指针超过索引长度
+				if (TWMatrix[jobNo][currentPointer].endOperNo == operNo) {
+					timeWindow tw = new timeWindow(TWMatrix[jobNo][currentPointer]);
+					int startTime = operationMatrix[jobNo][tw.startOperNo].endTime;
+					int endTime = operationMatrix[jobNo][tw.endOperNo].startTime;
+					int rWaitingTime;//实际等待时长
+					int sumProTime = 0; //中间工序的加工时长
 
+					for (int j = tw.startOperNo + 1; j < tw.endOperNo; j++) {
+						sumProTime += operationMatrix[jobNo][j].span;
+					}
+
+					rWaitingTime = endTime - startTime - sumProTime;
+					if (rWaitingTime > tw.waitingTime) {
+
+					}
+					pointer[jobNo]++;
+				}
+			}
 		}
 
 		int totalWeightedTardiness = 0;

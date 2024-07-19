@@ -18,7 +18,12 @@ public class timeWindow implements Comparable<timeWindow> {
         this.endOperNo = -1;
         this.waitingTime = -1;
     }
-
+    public timeWindow(timeWindow tw) {
+        this.jobNo = tw.jobNo;
+        this.startOperNo = tw.startOperNo;
+        this.endOperNo = tw.endOperNo;
+        this.waitingTime = tw.waitingTime;
+    }
     @Override
     public int compareTo(timeWindow o) {
         return this.startOperNo - o.startOperNo;
