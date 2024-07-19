@@ -59,11 +59,29 @@ public class CaculateFitness {
 		int start;
 		int end;
 		int type;// 0为工作,1为空闲。
+		int jobNo;
+		int operNo;
 
 		Time(int s, int e, int t) {
 			this.start = s;
 			this.end = e;
 			this.type = t;
+			this.jobNo = -1;
+			this.operNo = -1;
+		}
+		Time(int s, int e, int t, int j, int o) {
+			this.start = s;
+			this.end = e;
+			this.type = t;
+			this.jobNo = j;
+			this.operNo = o;
+		}
+		Time(Time t) {
+			this.start = t.start;
+			this.end = t.end;
+			this.type = t.type;
+			this.jobNo = t.jobNo;
+			this.operNo = t.operNo;
 		}
 	}
 
@@ -179,7 +197,7 @@ public class CaculateFitness {
 		int totalWeightedTardiness = 0;
 
 		for (int i = 0; i < jobCount; i++) {
-			Random random = new Random(1);
+			Random random = new Random(114514);
 			int sumMinProduceTime = 0;
 			for (int j = 0; j < input.getOperationCountArr()[i]; j++) {
 				int[] proDes = input.getProDesMatrix()[input.getOperationToIndex()[i][j]];
